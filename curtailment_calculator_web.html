@@ -40,7 +40,9 @@
     function parseCSV(text) {
       const lines = text.trim().split('\n');
       return lines
-        .map(line => line.trim().split(/\s+/))
+        .map(line => line.trim())
+        .filter(line => line && !line.toLowerCase().includes('sector'))
+        .map(line => line.split(/\s+|,|\t/))
         .filter(row => row.length >= 8 && !isNaN(parseFloat(row[7])));
     }
 
