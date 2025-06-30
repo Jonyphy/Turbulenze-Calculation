@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wind Curtailment Calculator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">🌬️ Wind Curtailment Loss Calculator</h1>
+
+    <form id="curtailmentForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Full Data</label>
+        <textarea id="fullData" rows="6" class="mt-1 border rounded px-3 py-2 w-full" placeholder="Paste FULL_DATA here"></textarea>
+      </div>
+
+      <div id="curtailedInputs">
+        <div class="curtailedBlock">
+          <label class="block text-sm font-medium mt-4">Curtailment Data 1</label>
+          <textarea rows="6" class="curtailedData mt-1 border rounded px-3 py-2 w-full" placeholder="Paste CURTAILED_DATA_1 here"></textarea>
+
+          <label class="block text-sm font-medium mt-2">Turbulence Range 1</label>
+          <input type="text" class="turbulenceRange mt-1 border rounded px-3 py-2 w-full" placeholder="e.g. 51-92 or 356-42" />
+        </div>
+      </div>
+
+      <button type="button" id="addMore" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">➕ Add More Curtailment</button>
+      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Calculate</button>
+    </form>
+
+    <div id="results" class="mt-8 hidden">
+      <h2 class="text-xl font-semibold mb-2">📊 Results</h2>
+      <div id="summaryTable" class="overflow-auto bg-white shadow-md rounded p-4 whitespace-pre font-mono"></div>
+    </div>
+  </div>
+
+  <script>
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      return lines.map(line => line.trim().split(/\s+/));
+    }
+
+    function parseRangeString(r) {
+      const parts = r.split(/[-,]/).map(p => parseFloat(p.trim()));
+      if (parts.length === 2) {
+        const [start, end] = parts;
+        return start <= end ? [[start, end]] : [[start, 360], [0, end]];
+      }
+      return [];
+    }
+
+    function calculateOverlapLoss(fullRows, curtailedRows, ranges) {
+      let loss = 0;
+      const result = [];
+
+      for (let i = 0; i < Math.min(fullRows.length, curtailedRows.length); i++) {
+        const angle = parseFloat(fullRows[i][1]);
+        const fullGWh = parseFloat(fullRows[i][7]);
+        const curtailedGWh = parseFloat(curtailedRows[i][7]);
+
+        const start = (angle - 15 + 360) % 360;
+        const end = (angle + 15) % 360;
+
+        let overlapDeg = 0;
+        for (const [rStart, rEnd] of ranges) {
+          if (start < end) {
+            overlapDeg += Math.max(0, Math.min(end, rEnd) - Math.max(start, rStart));
+          } else {
+            overlapDeg += Math.max(0, Math.min(360, rEnd) - Math.max(start, rStart));
+            overlapDeg += Math.max(0, Math.min(end, rEnd) - Math.max(0, rStart));
+          }
+        }
+
+        const frac = overlapDeg / 30;
+        const lossGWh = (fullGWh - curtailedGWh) * frac;
+        loss += lossGWh;
+
+        result.push({
+          sector: i + 1,
+          angle: angle,
+          overlapDeg: overlapDeg.toFixed(2),
+          fraction: frac.toFixed(4),
+          full: fullGWh.toFixed(3),
+          curtailed: curtailedGWh.toFixed(3),
+          loss: lossGWh.toFixed(6),
+          kwh: (lossGWh * 1e6).toFixed(0)
+        });
+      }
+
+      return { result, totalLoss: loss };
+    }
+
+    document.getElementById('addMore').addEventListener('click', () => {
+      const div = document.createElement('div');
+      div.className = 'curtailedBlock';
+      div.innerHTML = `
+        <label class="block text-sm font-medium mt-4">Curtailment Data</label>
+        <textarea rows="6" class="curtailedData mt-1 border rounded px-3 py-2 w-full" placeholder="Paste CURTAILED_DATA here"></textarea>
+        <label class="block text-sm font-medium mt-2">Turbulence Range</label>
+        <input type="text" class="turbulenceRange mt-1 border rounded px-3 py-2 w-full" placeholder="e.g. 51-92 or 356-42" />
+      `;
+      document.getElementById('curtailedInputs').appendChild(div);
+    });
+
+    document.getElementById('curtailmentForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const full = parseCSV(document.getElementById('fullData').value.trim());
+      const curtailedBlocks = document.querySelectorAll('.curtailedBlock');
+
+      let finalOutput = '', grandLoss = 0;
+
+      curtailedBlocks.forEach((block, i) => {
+        const curtailed = parseCSV(block.querySelector('.curtailedData').value.trim());
+        const rangeStr = block.querySelector('.turbulenceRange').value.trim();
+        const ranges = parseRangeString(rangeStr);
+
+        const { result, totalLoss } = calculateOverlapLoss(full, curtailed, ranges);
+        grandLoss += totalLoss;
+
+        finalOutput += `\n=== Scenario ${i + 1} ===\n`;
+        finalOutput += result.map(r => `Sector ${r.sector} | ${r.angle}° | Overlap: ${r.overlapDeg}° (${r.fraction}) | Loss: ${r.loss} GWh (${r.kwh} kWh)`).join('\n');
+        finalOutput += `\nTotal Loss: ${totalLoss.toFixed(6)} GWh\n`;
+      });
+
+      finalOutput += `\n=== Combined Total Loss: ${grandLoss.toFixed(6)} GWh (${(grandLoss * 1e6).toFixed(0)} kWh)`;
+
+      document.getElementById('output').textContent = finalOutput;
+      document.getElementById('results').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
