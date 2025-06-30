@@ -5,34 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wind Curtailment Calculator</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
-  <div class="max-w-4xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-4">🌬️ Wind Curtailment Loss Calculator</h1>
+<body class="bg-gradient-to-br from-blue-50 to-blue-100 text-gray-800 min-h-screen">
+  <div class="max-w-5xl mx-auto py-10 px-6">
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-900">🌬️ Wind Curtailment Loss Calculator</h1>
 
-    <form id="curtailmentForm" class="space-y-4">
+    <form id="curtailmentForm" class="space-y-6 glass p-6 rounded-lg shadow-lg">
       <div>
-        <label class="block text-sm font-medium">Full Data</label>
-        <textarea id="fullData" rows="6" class="mt-1 border rounded px-3 py-2 w-full" placeholder="Paste FULL_DATA here"></textarea>
+        <label class="block text-sm font-semibold mb-1">Full Data</label>
+        <textarea id="fullData" rows="6" class="border border-gray-300 rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-400" placeholder="Paste FULL_DATA here"></textarea>
       </div>
 
       <div id="curtailedInputs">
         <div class="curtailedBlock">
-          <label class="block text-sm font-medium mt-4">Curtailment Data 1</label>
-          <textarea rows="6" class="curtailedData mt-1 border rounded px-3 py-2 w-full" placeholder="Paste CURTAILED_DATA_1 here"></textarea>
+          <label class="block text-sm font-semibold mt-4 mb-1">Curtailment Data 1</label>
+          <textarea rows="6" class="curtailedData border border-gray-300 rounded px-3 py-2 w-full" placeholder="Paste CURTAILED_DATA_1 here"></textarea>
 
-          <label class="block text-sm font-medium mt-2">Turbulence Range 1</label>
-          <input type="text" class="turbulenceRange mt-1 border rounded px-3 py-2 w-full" placeholder="e.g. 51-92 or 356-42" />
+          <label class="block text-sm font-semibold mt-3 mb-1">Turbulence Range 1</label>
+          <input type="text" class="turbulenceRange border border-gray-300 rounded px-3 py-2 w-full" placeholder="e.g. 51-92 or 356-42" />
         </div>
       </div>
 
-      <button type="button" id="addMore" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">➕ Add More Curtailment</button>
-      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Calculate</button>
+      <div class="flex gap-4 mt-4">
+        <button type="button" id="addMore" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded shadow">➕ Add More Curtailment</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded shadow">Calculate</button>
+      </div>
     </form>
 
-    <div id="results" class="mt-8 hidden">
-      <h2 class="text-xl font-semibold mb-2">📊 Results</h2>
-      <div id="summaryTable" class="overflow-auto bg-white shadow-md rounded p-4 whitespace-pre font-mono"></div>
+    <div id="results" class="mt-10 hidden">
+      <h2 class="text-xl font-semibold text-blue-800 mb-2">📊 Results</h2>
+      <div id="summaryTable" class="overflow-auto bg-white shadow-lg rounded p-6 whitespace-pre font-mono border border-blue-200"></div>
     </div>
   </div>
 
@@ -100,10 +112,10 @@
       const div = document.createElement('div');
       div.className = 'curtailedBlock';
       div.innerHTML = `
-        <label class="block text-sm font-medium mt-4">Curtailment Data</label>
-        <textarea rows="6" class="curtailedData mt-1 border rounded px-3 py-2 w-full" placeholder="Paste CURTAILED_DATA here"></textarea>
-        <label class="block text-sm font-medium mt-2">Turbulence Range</label>
-        <input type="text" class="turbulenceRange mt-1 border rounded px-3 py-2 w-full" placeholder="e.g. 51-92 or 356-42" />
+        <label class="block text-sm font-semibold mt-4 mb-1">Curtailment Data</label>
+        <textarea rows="6" class="curtailedData border border-gray-300 rounded px-3 py-2 w-full" placeholder="Paste CURTAILED_DATA here"></textarea>
+        <label class="block text-sm font-semibold mt-3 mb-1">Turbulence Range</label>
+        <input type="text" class="turbulenceRange border border-gray-300 rounded px-3 py-2 w-full" placeholder="e.g. 51-92 or 356-42" />
       `;
       document.getElementById('curtailedInputs').appendChild(div);
     });
