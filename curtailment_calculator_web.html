@@ -39,7 +39,9 @@
   <script>
     function parseCSV(text) {
       const lines = text.trim().split('\n');
-      return lines.map(line => line.trim().split(/\s+/));
+      return lines
+        .map(line => line.trim().split(/\s+/))
+        .filter(row => row.length >= 8 && !isNaN(parseFloat(row[7])));
     }
 
     function parseRangeString(r) {
@@ -126,7 +128,7 @@
 
       finalOutput += `\n=== Combined Total Loss: ${grandLoss.toFixed(6)} GWh (${(grandLoss * 1e6).toFixed(0)} kWh)`;
 
-      document.getElementById('output').textContent = finalOutput;
+      document.getElementById('summaryTable').textContent = finalOutput;
       document.getElementById('results').classList.remove('hidden');
     });
   </script>
