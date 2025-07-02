@@ -69,7 +69,6 @@
 
     function calculateOverlapLoss(fullRows, curtailedRows, ranges) {
       let loss = 0;
-      let totalFull = 0;
       const result = [];
 
       for (let i = 0; i < Math.min(fullRows.length, curtailedRows.length); i++) {
@@ -93,7 +92,6 @@
         const frac = overlapDeg / 30;
         const lossGWh = (fullGWh - curtailedGWh) * frac;
         loss += lossGWh;
-        totalFull += fullGWh;
 
         result.push({
           sector: i + 1,
@@ -107,7 +105,7 @@
         });
       }
 
-      return { result, totalLoss: loss, totalFull: totalFull };
+      return { result, totalLoss: loss };
     }
 
     document.getElementById('addMore').addEventListener('click', () => {
@@ -127,26 +125,25 @@
       const full = parseCSV(document.getElementById('fullData').value.trim());
       const curtailedBlocks = document.querySelectorAll('.curtailedBlock');
 
-      let finalOutput = '', grandLoss = 0, grandFull = 0;
+      let finalOutput = '', grandLoss = 0;
+      const totalFullProd = full.reduce((sum, row) => sum + parseFloat(row[7]), 0);
 
       curtailedBlocks.forEach((block, i) => {
         const curtailed = parseCSV(block.querySelector('.curtailedData').value.trim());
         const rangeStr = block.querySelector('.turbulenceRange').value.trim();
         const ranges = parseRangeString(rangeStr);
 
-        const { result, totalLoss, totalFull } = calculateOverlapLoss(full, curtailed, ranges);
+        const { result, totalLoss } = calculateOverlapLoss(full, curtailed, ranges);
         grandLoss += totalLoss;
-        grandFull += totalFull;
 
         finalOutput += `\n=== Scenario ${i + 1} ===\n`;
         finalOutput += result.map(r => `Sector ${r.sector} | ${r.angle}° | Overlap: ${r.overlapDeg}° (${r.fraction}) | Loss: ${r.loss} GWh (${r.kwh} kWh)`).join('\n');
         finalOutput += `\nTotal Loss: ${totalLoss.toFixed(6)} GWh\n`;
       });
 
-      const lossPercent = grandFull > 0 ? ((grandLoss / grandFull) * 100).toFixed(2) : '0.00';
-
+      const lossPercentage = (1 - ((totalFullProd - grandLoss) / totalFullProd)) * 100;
       finalOutput += `\n=== Combined Total Loss: ${grandLoss.toFixed(6)} GWh (${(grandLoss * 1e6).toFixed(0)} kWh)`;
-      finalOutput += `\n=== Loss Percentage: ${lossPercent}%`;
+      finalOutput += `\n=== Loss Percentage: ${lossPercentage.toFixed(2)}%`;
 
       document.getElementById('summaryTable').textContent = finalOutput;
       document.getElementById('results').classList.remove('hidden');
@@ -154,3 +151,4 @@
   </script>
 </body>
 </html>
+
