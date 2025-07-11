@@ -125,7 +125,7 @@
       const full = parseCSV(document.getElementById('fullData').value.trim());
       const curtailedBlocks = document.querySelectorAll('.curtailedBlock');
 
-      let finalOutput = '', grandLoss = 0, grandCurtail = 0;
+      let finalOutput = '', grandLoss = 0;
       const totalFullProd = full.reduce((sum, row) => sum + parseFloat(row[7]), 0);
 
       curtailedBlocks.forEach((block, i) => {
@@ -134,20 +134,20 @@
         const ranges = parseRangeString(rangeStr);
 
         const { result, totalLoss } = calculateOverlapLoss(full, curtailed, ranges);
-        const curtailedTotal = curtailed.reduce((sum, row) => sum + parseFloat(row[7]), 0);
-        const lossPct = ((1 - curtailedTotal / totalFullProd) * 100).toFixed(2);
         grandLoss += totalLoss;
-        grandCurtail += curtailedTotal;
+
+        const scenarioLossPercentage = (1 - ((totalFullProd - totalLoss) / totalFullProd)) * 100;
 
         finalOutput += `\n=== Scenario ${i + 1} ===\n`;
-        finalOutput += `Sector: ${rangeStr}\n`;
-        finalOutput += result.map(r => `${r.sector}\t${r.angle}\t${r.overlapDeg}\t${r.fraction}\t${r.full}\t${r.curtailed}\t${r.loss}\t${r.kwh}`).join('\n');
-        finalOutput += `\nTotal Loss: ${totalLoss.toFixed(6)} GWh\nLoss Percentage: ${lossPct}%\n`;
+        finalOutput += `Turbulence Range: ${rangeStr}\n`;
+        finalOutput += result.map(r => `Sector ${r.sector} | ${r.angle}° | Overlap: ${r.overlapDeg}° (${r.fraction}) | Loss: ${r.loss} GWh (${r.kwh} kWh)`).join('\n');
+        finalOutput += `\nTotal Loss: ${totalLoss.toFixed(6)} GWh`;
+        finalOutput += `\nLoss Percentage: ${scenarioLossPercentage.toFixed(2)}%\n`;
       });
 
-      const combinedPct = ((1 - grandCurtail / totalFullProd) * 100).toFixed(2);
+      const lossPercentage = (1 - ((totalFullProd - grandLoss) / totalFullProd)) * 100;
       finalOutput += `\n=== Combined Total Loss: ${grandLoss.toFixed(6)} GWh (${(grandLoss * 1e6).toFixed(0)} kWh)`;
-      finalOutput += `\n=== Combined Loss Percentage: ${combinedPct}%`;
+      finalOutput += `\n=== Loss Percentage: ${lossPercentage.toFixed(2)}%`;
 
       document.getElementById('summaryTable').textContent = finalOutput;
       document.getElementById('results').classList.remove('hidden');
