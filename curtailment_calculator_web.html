@@ -18,7 +18,7 @@
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-blue-100 text-gray-800 min-h-screen">
   <div class="max-w-5xl mx-auto py-10 px-6">
-    <h1 class="text-3xl font-bold mb-6 text-center text-blue-900">Wind Curtailment Loss Calculator</h1>
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-900">🌬️ Wind Curtailment Loss Calculator</h1>
 
     <form id="curtailmentForm" class="space-y-6 glass p-6 rounded-lg shadow-lg">
       <div>
@@ -108,7 +108,7 @@
       }
 
       const percentageLoss = ((1 - curtailedSum / fullSum) * 100).toFixed(2);
-      return { result, totalLoss: loss, percentageLoss, ranges };
+      return { result, totalLoss: loss, percentageLoss };
     }
 
     document.getElementById('addMore').addEventListener('click', () => {
@@ -139,10 +139,9 @@
         grandLoss += totalLoss;
 
         finalOutput += `\n=== Scenario ${i + 1} ===\n`;
-        finalOutput += `Turbulence Ranges: ${rangeStr}\n`;
-        finalOutput += `Sector\tAngle\tOverlap (deg)\tFraction\tFull Prod (GWh)\tCurtail Prod (GWh)\tLoss (GWh)\tLoss (kWh)\n`;
+        finalOutput += `Sector: ${rangeStr}\n`;
         finalOutput += result.map(r => `${r.sector}\t${r.angle}\t${r.overlapDeg}\t${r.fraction}\t${r.full}\t${r.curtailed}\t${r.loss}\t${r.kwh}`).join('\n');
-        finalOutput += `\nTotal Loss: ${totalLoss.toFixed(6)} GWh\tLoss Percentage: ${percentageLoss}%\n`;
+        finalOutput += `\nTotal Loss: ${totalLoss.toFixed(6)} GWh\nLoss Percentage: ${percentageLoss}%\n`;
       });
 
       finalOutput += `\n=== Combined Total Loss: ${grandLoss.toFixed(6)} GWh (${(grandLoss * 1e6).toFixed(0)} kWh)`;
