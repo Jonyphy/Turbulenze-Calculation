@@ -169,12 +169,12 @@
       return lines
         .map(line => line.trim())
         .filter(line => line && !line.toLowerCase().includes('sector'))
-        .map(line => line.split(/\s+|,|\t/))
+        .map(line => line.split(lang === 'de' ? /\\s+|\\t/ : /\\s+|,|\\t/))
         .filter(row => row.length >= 8 && !isNaN(parseLocaleNumber(row[7])));
     }
 
     function parseRangeString(r) {
-      const parts = r.split(/[-,]/).map(p => parseLocaleNumber(p.trim()));
+      const parts = r.split(/[-–]/).map(p => parseLocaleNumber(p.trim()));
       if (parts.length === 2 && parts.every(v => !isNaN(v))) {
         const [start, end] = parts;
         return start <= end ? [[start, end]] : [[start, 360], [0, end]];
