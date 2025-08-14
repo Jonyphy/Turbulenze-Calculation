@@ -170,7 +170,9 @@
       return lines
         .map(line => line.trim())
         .filter(line => line && !line.toLowerCase().includes('sector'))
-        .map(line => (langSelect && langSelect.value === 'de') ? line.split(/\s+|\t/) : line.split(/\s+|,|\t/))
+        .map(line => lang === 'de'
+          ? line.split(/\s+|\t/)
+          : line.split(/\s+|,|\t/))
         .filter(row => row.length >= 8 && !isNaN(parseLocaleNumber(row[7])));
     }
 
