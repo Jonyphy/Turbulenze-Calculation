@@ -165,6 +165,7 @@
 
     // ---- Original logic with locale-aware parsing/formatting wrappers ----
     function parseCSV(text) {
+      const lang = (langSelect && langSelect.value) || 'en';
       const lines = text.trim().split('\n');
       return lines
         .map(line => line.trim())
